@@ -1,0 +1,925 @@
+/* ─────────────────── 0. SUBPIXEL & TEXT RENDERING ─────────────────── */
+/* ─ Enable smooth fonts & precise rendering ─ */
+html {
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+}
+
+/* ─────────────────── 1. PALETTE & THEMES ─────────────────── */
+/* ─ 1.1 Design tokens for light and dark modes ─ */
+:root {
+  /* ─ Light theme colors ─ */
+  --bg-light: #f0f2f5;
+  /* background */
+  --fg-light: #343a40;
+  /* foreground */
+  --header-bg-light: #ffffff;
+  --sidebar-bg-light: #ffffff;
+  --border-light: #ccc;
+  --accent-light: #0a84ff;
+  --accent-hover-light: rgba(10, 132, 255, 0.7);
+
+  /* ─ Dark theme colors ─ */
+  --bg-dark: #1e1e1e;
+  --fg-dark: #e0e0e0;
+  --header-bg-dark: #2c2c2c;
+  --sidebar-bg-dark: #252525;
+  --border-dark: #444;
+  --accent-dark: #0a84ff;
+  --accent-hover-dark: rgba(10, 132, 255, 0.7);
+}
+
+/* ─ 1.2 Live defaults (light) ─ */
+:root {
+  /* ─ Core colors & references ─ */
+  --bg: var(--bg-light);
+  --fg: var(--fg-light);
+  --header-bg: var(--header-bg-light);
+  --sidebar-bg: var(--sidebar-bg-light);
+  --border: var(--border-light);
+  --accent: var(--accent-light);
+  --accent-hover: var(--accent-hover-light);
+
+  /* ─ Inputs styling ─ */
+  --input-bg: var(--sidebar-bg);
+  --input-fg: var(--fg);
+  --input-border: var(--border);
+
+  /* ─ Typography scales ─ */
+  --ff-base: 'Roboto', sans-serif;
+  --fs-base: 1rem;
+  --fs-sm: .875rem;
+  --fs-lg: 1.25rem;
+
+  /* ─ Spacing scales ─ */
+  --s-xs: 4px;
+  --s-sm: 8px;
+  --s-md: 16px;
+  --s-lg: 24px;
+
+  /* ─ Sidebar widths ─ */
+  --sidebar-left-w: 250px;
+  --sidebar-right-w: 300px;
+
+  /* ─ Stamp toolbar settings ─ */
+  --stamp-size: 40px;
+  --stampbar-padding: var(--s-sm);
+  --stamp-gap: 0.5rem;
+  --stamp-cursor: crosshair;
+  --stampbar-bg: rgba(0, 0, 0, 0.6);
+  --stampbar-radius: 6px;
+  --stampbar-tooltip-offset: -2.5rem;
+
+  /* ─ Notifications & message queue ─ */
+  --message-height: 2rem;
+  --notif-max: 7;
+  --message-gap: var(--s-xs);
+  --user-message-gap: var(--s-md);
+  --user-message-offset: calc(var(--s-lg) + var(--stamp-size) + 2*var(--stampbar-padding) + var(--user-message-gap));
+
+  /* ─ Layout breakpoints & z-indices ─ */
+  --header-h: 60px;
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --z-header: 1000;
+  --z-sidebar: 900;
+  --z-map-toolbar: 800;
+  --z-notifications: 700;
+  --z-user-message: calc(var(--z-map-toolbar)+1);
+  --z-autocomplete: 10000;
+
+  /* ─ Easing timing ─ */
+  --ease: 0.2s ease-out;
+
+  /* ─ Switch pill colors ─ */
+  --switch-map-active-bg: var(--accent);
+  --switch-map-active-border: var(--accent);
+  --switch-map-active-color: #fff;
+  --switch-img-active-bg: #007bff;
+  --switch-img-active-border: #0056b3;
+  --switch-img-active-color: #fff;
+
+  /* ─ Button defaults ─ */
+  --btn-bg: var(--accent);
+  --btn-border: var(--border);
+  --btn-color: #e0e0e0;
+  --btn-hover-bg: var(--accent-hover);
+
+  /* ─ Custom map form metrics ─ */
+  --custom-map-width: 80%;
+  --custom-map-max-width: 600px;
+  --url-box-padding-v: var(--s-sm);
+  --url-box-padding-h: var(--s-lg);
+  --custom-map-form-colors: var(--fg);
+  --custom-map-form-opacity: 0.5;
+  --custom-map-input-border: var(--fg);
+
+  /* ─ Variables for location card icons & text ─ */
+  --location-icon-size: 1.25rem;
+  /* icon font-size for map-marker and compass */
+  --location-text-gap: var(--s-xs);
+  /* gap between icon and text */
+  --map-link-size: 1.6rem;
+  /* size for the Google/Apple/Waze buttons */
+  --map-link-pad: 0.25rem;
+  /* touch-target padding around those buttons */
+}
+
+
+
+
+/* ─ 1.3 Dark mode overrides (OS) ─ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--bg-dark);
+    --fg: var(--fg-dark);
+    --header-bg: var(--header-bg-dark);
+    --sidebar-bg: var(--sidebar-bg-dark);
+    --border: var(--border-dark);
+    --accent: var(--accent-dark);
+    --accent-hover: var(--accent-hover-dark);
+    --input-bg: var(--sidebar-bg);
+    --input-fg: var(--fg);
+    --input-border: var(--border);
+  }
+}
+
+/* ─ 1.4 User theme toggle overrides ─ */
+html[data-theme="dark"] {
+  --bg: var(--bg-dark);
+  --fg: var(--fg-dark);
+  --header-bg: var(--header-bg-dark);
+  --sidebar-bg: var(--sidebar-bg-dark);
+  --border: var(--border-dark);
+  --accent: var(--accent-dark);
+  --accent-hover: var(--accent-hover-dark);
+  --input-bg: var(--sidebar-bg);
+  --input-fg: var(--fg);
+  --input-border: var(--border);
+}
+
+html[data-theme="light"] {
+  --bg: var(--bg-light);
+  --fg: var(--fg-light);
+  --header-bg: var(--header-bg-light);
+  --sidebar-bg: var(--sidebar-bg-light);
+  --border: var(--border-light);
+  --accent: var(--accent-light);
+  --accent-hover: var(--accent-hover-light);
+  --input-bg: var(--sidebar-bg-light);
+  --input-fg: var(--fg-light);
+  --input-border: var(--border-light);
+}
+
+/* ─────────────────── 2. RESET & BASE ─────────────────── */
+/* ─ 2.1 Remove default margins and set height ─ */
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+/* ─ 2.2 Body layout defaults ─ */
+body {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--ff-base);
+  font-size: var(--fs-base);
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* ─ 2.3 Link defaults ─ */
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  opacity: .8;
+}
+
+/* ─────────────────── 3. LAYOUT ─────────────────── */
+/* ─ 3.1 Header layout ─ */
+header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--header-bg);
+  padding: var(--s-sm) var(--s-lg);
+  z-index: var(--z-header);
+}
+
+/* ─ 3.2 Sidebars & container ─ */
+.container {
+  flex: 1 1 auto;
+  display: flex;
+  overflow: hidden;
+}
+
+.sidebar {
+  flex: 0 0 auto;
+  padding: var(--s-md);
+  background: var(--sidebar-bg);
+  overflow-y: auto;
+}
+
+.sidebar.left {
+  width: var(--sidebar-left-w);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar.right {
+  width: var(--sidebar-right-w);
+  border-left: 1px solid var(--border);
+}
+
+.map-section {
+  flex: 1 1 auto;
+  position: relative;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.map-section>* {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ─────────────────── 4. CONTROLS: Switch & Theme Toggle ─────────────────── */
+.switch-toggle {
+  display: inline-flex;
+  border: 1px solid var(--fg);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.switch-toggle .switch-btn {
+  gap: 0.25rem;
+  padding: var(--s-xs) var(--s-sm);
+  background: transparent;
+  color: var(--fg);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 4ch;
+  text-align: center;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+}
+
+#switch-toggle.map-mode .switch-btn[data-view="map"].active {
+  background: var(--switch-map-active-bg);
+  border-color: var(--switch-map-active-border);
+  color: var(--switch-map-active-color);
+}
+
+#switch-toggle.image-mode .switch-btn[data-view="image"].active {
+  background: var(--switch-img-active-bg);
+  border-color: var(--switch-img-active-border);
+  color: var(--switch-img-active-color);
+}
+
+#theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-xs);
+  padding: var(--s-xs) var(--s-sm);
+  border: 1px solid var(--fg);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  transition: background var(--ease);
+}
+
+#theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ─────────────────── 5. BUTTONS ─────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-xs);
+  background: var(--btn-bg);
+  color: var(--btn-color);
+  border: 1px solid var(--btn-border);
+  padding: var(--s-xs) var(--s-md);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background var(--ease);
+}
+
+.btn:hover {
+  background: var(--btn-hover-bg);
+}
+
+/* ─────────────────── 6. NUMBER CONTROLS ─────────────────── */
+.number-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-xs);
+}
+
+.number-controls .num-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.number-controls .num-btn i {
+  color: var(--stampbar-btn-color);
+  font-size: 1.25rem;
+  transition: color var(--ease);
+}
+
+.number-controls .num-btn:hover i {
+  color: var(--stampbar-btn-hover-color);
+}
+
+/* ─────────────────── 7. FORMS & INPUTS ─────────────────── */
+.form-group {
+  margin-bottom: var(--s-lg);
+}
+
+label {
+  display: block;
+  margin-bottom: var(--s-xs);
+  font-size: var(--fs-sm);
+  color: var(--fg);
+}
+
+.autocomplete-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: var(--sidebar-left-w);
+  margin-bottom: var(--s-xs);
+}
+
+.search-field input.search-input {
+  width: 100%;
+  padding: var(--s-xs);
+  padding-right: 2rem;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background: var(--input-bg);
+  color: var(--input-fg);
+  line-height: 1.5;
+}
+
+.search-input:focus {
+  outline: 1px solid var(--input-focus-border);
+}
+
+.search-input::placeholder,
+.url-input::placeholder {
+  color: var(--input-fg);
+  opacity: 0.6;
+}
+
+.spinner-small {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--input-border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  display: none;
+  pointer-events: none;
+  z-index: 1600;
+}
+
+.autocomplete-wrapper.searching .spinner-small {
+  display: block;
+  animation: spin-sm .6s linear infinite;
+}
+
+.autocomplete-list {
+  position: absolute;
+  top: calc(100% + var(--s-xs));
+  left: 0;
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1500;
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.autocomplete-list:empty {
+  display: none;
+}
+
+.autocomplete-list li {
+  padding: var(--s-xs) var(--s-sm);
+  cursor: pointer;
+  transition: background var(--ease);
+}
+
+.autocomplete-list li:hover,
+.autocomplete-list li.autocomplete-active {
+  background: var(--accent);
+  color: var(--btn-color);
+}
+
+select,
+select option {
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border: 1px solid var(--input-border);
+}
+
+/* ─────────────────── 8. DRAG & DROP CUSTOM MAP (colors & opacity unified) ─────────────────── */
+.file-upload-area,
+.url-input-area {
+  /* keep your existing sizing & borders… */
+  box-sizing: border-box;
+  width: var(--custom-map-width);
+  max-width: var(--custom-map-max-width);
+  margin: 2vh auto 0;
+  opacity: var(--custom-map-form-opacity);
+}
+
+.file-upload-area {
+  border: 2px dashed var(--custom-map-input-border);
+  padding: var(--s-lg);
+  padding-top: calc(var(--s-lg) + var(--s-lg));
+  padding-bottom: calc(var(--s-lg) + var(--s-lg));
+  /* text color now matches your border variable */
+  color: var(--custom-map-form-colors);
+  text-align: center;
+}
+
+.url-input-area {
+  position: relative;
+  border-top: 2px solid var(--custom-map-input-border);
+  border-bottom: 2px solid var(--custom-map-input-border);
+  padding-top: var(--s-md);
+  padding-bottom: var(--s-md);
+  /* transparent background, no opacity here! */
+}
+
+/* paint the globe, off of the same border color */
+.url-input-area::before {
+  content: "\f0ac";
+  /* FA globe */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  /* solid globe */
+  position: absolute;
+  top: 50%;
+  left: var(--url-box-padding-h);
+  transform: translateY(-50%);
+  z-index: 2;
+  pointer-events: none;
+  /* text color now matches your border variable */
+  color: var(--custom-map-form-colors);
+}
+
+/* ─ 8.1 Full-width input, text centered under the globe ─ */
+.url-input-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.url-input-container input {
+  width: 80%;
+  border: none;
+  background: transparent;
+  text-align: center;
+  pointer-events: auto;
+  /* text color now matches your border variable */
+  color: var(--custom-map-form-colors);
+}
+
+.url-input-container input::placeholder {
+  /* cancel the browser’s built-in dimming */
+  opacity: 1;
+  color: var(--custom-map-form-colors);
+}
+
+
+
+/* ─ 8.2 Prevent any “light up” on focus for the custom‐map form ─ */
+#custom-map-form:focus-within,
+#custom-map-form *:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.file-upload-area:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.url-input-area:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.url-input-container input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+
+
+/* ─────────────────── 9. CUSTOM MAP FORM OVERLAY ─────────────────── */
+.map-section.image-mode .map-canvas {
+  display: none;
+}
+
+.map-section #custom-map-form {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  background: var(--bg);
+  z-index: 500;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+}
+
+.map-section.image-mode #custom-map-form {
+  display: flex;
+}
+
+/* ─────────────────── 10. MAP CANVAS & LOADING ─────────────────── */
+.map-canvas,
+.custom-image-container,
+.custom-map-form {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.spinner {
+  border: 4px solid #444;
+  border-top: 4px solid var(--accent);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 1s linear infinite;
+}
+
+/* ─────────────────── 11. USER MESSAGES ─────────────────── */
+#user-message {
+  position: absolute;
+  bottom: var(--user-message-offset);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: var(--s-xs) var(--s-sm);
+  border-radius: 4px;
+  z-index: var(--z-user-message);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+
+#user-message.visible {
+  opacity: 1;
+}
+
+/* ─────────────────── 12. STAMP BAR ─────────────────── */
+.stamp-bar {
+  position: absolute;
+  bottom: var(--s-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--stamp-gap);
+  background: var(--stampbar-bg);
+  padding: var(--stampbar-padding);
+  border-radius: var(--stampbar-radius);
+  z-index: var(--z-map-toolbar);
+}
+
+.stamp-slot {
+  width: var(--stamp-size);
+  height: var(--stamp-size);
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+}
+
+.stamp-slot img {
+  width: 100%;
+  height: 100%;
+}
+
+.stamp-slot:hover::after {
+  content: attr(data-title);
+  position: absolute;
+  top: var(--stampbar-tooltip-offset);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #fff;
+  padding: var(--s-xs) var(--s-sm);
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: var(--fs-sm);
+}
+
+/* ─────────────────── 13. LOCATION CARD ICON + TEXT ─────────────────── */
+.location-card .row-left,
+.location-card .coords-text {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--location-text-gap);
+}
+
+.location-card .row-left>i,
+.location-card .row-left>svg,
+.location-card .row-left>img,
+.location-card .coords-text>i,
+.location-card .coords-text>svg,
+.location-card .coords-text>img {
+  flex-shrink: 0;
+  width: var(--location-icon-size);
+  height: var(--location-icon-size);
+}
+
+/* ─────────────────── 14. MAP-SERVICE LINKS ─────────────────── */
+.location-card .map-links {
+  display: flex;
+  gap: var(--s-xs);
+}
+
+.location-card .map-links .brand-link {
+  /* square touch target */
+  width: calc(var(--map-link-size) + 2 * var(--map-link-pad));
+  height: calc(var(--map-link-size) + 2 * var(--map-link-pad));
+  padding: var(--map-link-pad);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.location-card .map-links .brand-link>i,
+.location-card .map-links .brand-link>svg,
+.location-card .map-links .brand-link>img {
+  width: var(--map-link-size);
+  height: var(--map-link-size);
+  display: block;
+}
+
+/* ─────────────────── 15. BOTTOM-PINNED STATUS & CREDITS ─────────────────── */
+.sidebar.left {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar.left>:not(.bottom-group) {
+  flex: 0 0 auto;
+}
+
+.bottom-group {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  z-index: var(--z-notifications);
+}
+
+#status-container {
+  max-height: calc(var(--notif-max)*var(--message-height));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--message-gap);
+  padding: var(--s-xs);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+#status-container::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.transient-message {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .3s, transform .3s;
+  margin-bottom: var(--message-gap);
+}
+
+.transient-message.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#left-footer {
+  flex: 0 0 auto;
+  margin-top: var(--s-md);
+}
+
+/* ─────────────────── 16. RESPONSIVE ─────────────────── */
+@media(max-width:var(--bp-lg)) {
+  .container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+  }
+
+  .map-section {
+    height: 400px;
+  }
+}
+
+/* ─────────────────── 17. STAMP-CURSOR MODE ─────────────────── */
+#mapImageContainer.stamp-mode-active,
+#mapImageContainer.stamp-mode-active *,
+#stampBar.stamp-mode-active,
+#stampBar.stamp-mode-active * {
+  cursor: var(--stamp-cursor) !important;
+}
+
+/* ─────────────────── 18. SEARCH AUTOCOMPLETE OVERRIDES ─────────────────── */
+.sidebar.left,
+#search-section,
+#search-section .autocomplete-wrapper {
+  overflow: visible !important;
+}
+
+#search-section .autocomplete-wrapper {
+  position: relative;
+  z-index: var(--z-autocomplete);
+  width: 100%;
+  max-width: none;
+}
+
+#search-section .search-field {
+  position: relative;
+}
+
+#search-section .search-input {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+#search-section .spinner-small {
+  position: absolute;
+  top: 50%;
+  right: var(--s-sm);
+  width: 0.875rem;
+  height: 0.875rem;
+  transform: translateY(-50%);
+}
+
+#search-section .autocomplete-list {
+  position: absolute;
+  top: calc(100%+2px);
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  z-index: var(--z-autocomplete) !important;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  box-sizing: border-box;
+  white-space: normal;
+  word-break: break-word;
+  margin: 0;
+  padding: var(--s-xs) 0;
+  list-style: none;
+}
+
+#search-section .autocomplete-list li {
+  position: relative;
+  padding: var(--s-xs) var(--s-sm);
+  cursor: pointer;
+  transition: background var(--ease);
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+}
+
+#search-section .autocomplete-list li::before {
+  content: "•";
+  position: absolute;
+  left: var(--s-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--fg);
+  font-size: 0.75em;
+}
+
+#search-section .autocomplete-list li {
+  padding-left: calc(var(--s-sm)*2);
+}
+
+#search-section .autocomplete-list li:hover,
+#search-section .autocomplete-list li.autocomplete-active {
+  background: var(--accent);
+  color: var(--btn-color);
+}
+
+/* ─────────────────── 19. END OF STYLESHEET ──────────────────── */
+
+
+
+
+
+/* ───────────────────
+   Debug: center markers for URL form
+
+.url-input-area {
+  position: relative;
+  outline: 1px solid limegreen;
+  background: rgba(0, 255, 0, 0.1);
+}
+
+
+.url-input-container input {
+  outline: 1px solid hotpink;
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.url-input-area::before {
+  content: "\f192";
+  /* FontAwesome far fa-dot-circle 
+  font-family: "Font Awesome 5 Free";
+  font-weight: 400;
+  /* regular 
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: limegreen;
+  font-size: 1em;
+  /* matches 1em in your indent calc 
+  pointer-events: none;
+}
+
+/* (2) hotpink dot at the center of just the input box 
+.url-input-marker {
+  position: relative;
+  /* make the span a positioning context 
+  display: inline-block;
+  /* shrink‐wrap to the input 
+}
+
+.url-input-marker::before {
+  content: "\f192";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 400;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: hotpink;
+  font-size: 1em;
+  pointer-events: none;
+}─────────────────── */

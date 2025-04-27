@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  web:
+    image: nginx:stable-alpine
+    container_name: map-tool-web
+    ports:
+      - "8080:80"
+    volumes:
+      - map_tool_webroot:/usr/share/nginx/html:ro
+
+volumes:
+  map_tool_webroot:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: E:/Docker/Volumes/map-tool-webroot

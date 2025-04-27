@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Preproduction Map Creator Tool" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Preproduction Map Creator Tool</title>
+
+  <!-- 1) theme‐detection MUST run before any CSS is parsed -->
+  <script>
+    (function () {
+      const stored = localStorage.getItem("theme");
+      const prefers = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+      document.documentElement.setAttribute("data-theme", stored || prefers);
+    })();
+  </script>
+
+  <!-- Leaflet & Font Awesome -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css"
+    crossorigin="anonymous" />
+
+
+  <!-- Your custom styles -->
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- Emoji favicons fallback -->
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' font-size='80'%3E📍%3C/text%3E%3C/svg%3E"
+    media="(prefers-color-scheme: light)" />
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' font-size='80'%3E🗺️%3C/text%3E%3C/svg%3E"
+    media="(prefers-color-scheme: dark)" />
+
+  <!-- initialize data-theme from localStorage or OS -->
+  <script>
+    (function () {
+      const stored = localStorage.getItem("theme");
+      const prefers = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+      document.documentElement.setAttribute("data-theme", stored || prefers);
+    })();
+  </script>
+</head>
+
+<body>
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <!-- Theme toggle -->
+      <button id="theme-toggle" class="btn-toggle">
+        <i class="fas fa-moon"></i>
+        <span>Dark mode</span>
+      </button>
+
+      <!-- Map ↔ Image switch -->
+      <div class="switch-toggle" id="switch-toggle">
+        <button class="switch-btn active" data-view="map">
+          <i class="fas fa-map"></i>
+          <span>Map</span>
+        </button>
+        <button class="switch-btn" data-view="image">
+          <i class="fas fa-image"></i>
+          <span>Image</span>
+        </button>
+      </div>
+    </div>
+
+    <h1 class="header-title">Preproduction Map Creator Tool</h1>
+
+    <div class="header-buttons">
+      <button class="btn" id="screenshot-button">
+        <i class="fas fa-camera"></i><span>Screenshot</span>
+      </button>
+      <button class="btn" id="pdf-button">
+        <i class="fas fa-file-pdf"></i><span>PDF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <div class="container">
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar left">
+      <!-- Search Section -->
+      <div class="form-group" id="search-section">
+        <div class="form-row">
+          <label for="address-format">Country:</label>
+          <select id="address-format">
+            <option value="be">🇧🇪 Belgium</option>
+            <option value="us">🇺🇸 United States</option>
+            <option value="nl">🇳🇱 Netherlands</option>
+            <option value="lu">🇱🇺 Luxembourg</option>
+            <option value="de">🇩🇪 Germany</option>
+            <option value="fr">🇫🇷 France</option>
+            <option value="uk">🇬🇧 UK</option>
+            <option value="generic">🌐 Generic</option>
+          </select>
+        </div>
+        <div class="autocomplete-wrapper">
+          <label for="address-input">Enter Address:</label>
+          <!-- address form -->
+          <div class="search-field">
+            <input id="address-input" class="search-input" type="text" name="address" autocomplete="street-address"
+              placeholder="Search…" />
+            <!-- tiny spinner -->
+            <div class="spinner-small" aria-hidden="true"></div>
+          </div>
+          <!-- autocomplete list -->
+          <ul id="autocomplete-list" class="autocomplete-list"></ul>
+        </div>
+
+        <button id="search-button" class="btn">
+          <i class="fas fa-search"></i><span>Search</span>
+        </button>
+      </div>
+
+      <!-- Image Reset Section -->
+      <div class="form-group" id="reset-section" style="display: none;">
+        <button id="resetImageMode" class="btn">
+          <i class="fas fa-undo"></i><span>Reset</span>
+        </button>
+      </div>
+
+      <!-- Calibration & Pins -->
+      <div class="form-group" id="calibration-section">
+        <button id="btnCalibrate" class="btn">
+          <i class="fas fa-map-pin"></i><span>Calibrate</span>
+        </button>
+        <button id="btnTogglePins" class="btn">
+          <i class="fas fa-eye"></i><span>Toggle Pins</span>
+        </button>
+      </div>
+
+      <!-- CSV Import/Export -->
+      <div class="form-group" id="csv-section">
+        <button id="importCSV" class="btn">
+          <i class="fas fa-file-csv"></i><span>Import CSV</span>
+        </button>
+        <button id="exportCSV" class="btn">
+          <i class="fas fa-file-export"></i><span>Export CSV</span>
+        </button>
+      </div>
+
+      <!-- BOTTOM-PINNED WRAPPER -->
+      <div class="bottom-group">
+        <!-- status container: we pass the max into a CSS var -->
+        <div id="status-container" data-max-messages="7" style="--max-messages:7;" aria-live="polite">
+        </div>
+
+        <!-- Footer Credits -->
+        <div id="left-footer">
+          <small>
+            Icons by <a href="https://icons8.com" target="_blank">Icons8</a><br />
+            Map powered by <a href="https://leafletjs.com" target="_blank">Leaflet</a>
+          </small>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAP / IMAGE PANEL -->
+    <main id="mapImageContainer" class="map-section map-mode">
+      <!-- 1) Leaflet map canvas -->
+      <div id="map" class="map-canvas"></div>
+
+      <!-- 2) Loading overlay for screenshots/PDFs -->
+      <div id="map-loading" class="loading-overlay" style="display:none">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- 3) Hidden custom-image container -->
+      <div id="customImageContainer" class="custom-image-container"></div>
+
+      <!-- 4) Full-bleed custom-image form -->
+      <form id="custom-map-form" class="custom-map-form">
+        <div id="dropZone" class="file-upload-area">
+          <input type="file" id="fileInput" accept="image/*" hidden />
+          <p>Drag &amp; drop an image here</p>
+        </div>
+        <div class="url-input-area">
+          <div class="url-input-container">
+            <i class="fas fa-globe"></i>
+            <input id="customMapUrl" class="url-input" type="url" placeholder="Or enter image URL" />
+          </div>
+        </div>
+      </form>
+    </main>
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="sidebar right">
+      <!-- Selected Location -->
+      <section class="location-section">
+        <h2>Selected Location</h2>
+        <div class="location-card" data-id="LOC-000">
+          <div class="location-row">
+            <div class="row-left">
+              <i class="fas fa-map-marker-alt location-icon"></i>
+              <div class="row-text" id="location-address">–</div>
+            </div>
+          </div>
+          <div class="location-row">
+            <div class="row-left">
+              <i class="fas fa-compass location-icon"></i>
+              <div class="row-text" id="location-coordinates">–</div>
+            </div>
+          </div>
+          <div class="location-row">
+            <div class="map-links">
+              <a id="google-map-link" class="brand-link" target="_blank" title="Google Maps">
+                <i class="fab fa-google"></i>
+              </a>
+              <a id="apple-map-link" class="brand-link" target="_blank" title="Apple Maps">
+                <i class="fab fa-apple"></i>
+              </a>
+              <a id="waze-map-link" class="brand-link" target="_blank" title="Waze">
+                <img src="images/location_card_icons/waze.svg" alt="Waze" class="brand-icon" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Saved Locations -->
+      <section class="location-section">
+        <h2>Saved Locations</h2>
+        <div id="saved-locations" class="saved-list" data-next-id="001"></div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Transient user message (JS will fill & show/hide) -->
+  <div id="user-message">Click below to select your stamp</div>
+
+  <!-- Stamp Bar (always above map) -->
+  <div id="stampBar" class="stamp-bar">
+    <div class="number-controls">
+      <button class="num-btn plus" title="Next number" onclick="event.stopPropagation(); incrementNumber();"><i
+          class="fas fa-plus"></i></button>
+      <button class="num-btn minus" title="Previous number" onclick="event.stopPropagation(); decrementNumber();"><i
+          class="fas fa-minus"></i></button>
+    </div>
+    <label class="stamp-slot" data-stamp="number" data-title="Number">
+      <img id="numbered-icon" src="images/stamps/stamp_01.png" alt="Number" />
+    </label>
+    <!-- All the other stamps -->
+    <label class="stamp-slot" data-stamp="crew-parking" data-title="Crew Parking"><img
+        src="images/stamps/stamp_parking.png" alt="Crew Parking" /></label>
+    <label class="stamp-slot" data-stamp="crew-entrance" data-title="Crew Entrance"><img
+        src="images/stamps/stamp_crew_enterance.png" alt="Crew Entrance" /></label>
+    <label class="stamp-slot" data-stamp="lunch" data-title="Lunch"><img src="images/stamps/stamp_lunch.png"
+        alt="Lunch" /></label>
+    <label class="stamp-slot" data-stamp="ob-van" data-title="OB Van"><img src="images/stamps/stamp_ob_van.png"
+        alt="OB Van" /></label>
+    <label class="stamp-slot" data-stamp="materiaalwagen" data-title="Materiaalwagen"><img
+        src="images/stamps/stamp_materiaalwagen.png" alt="Materiaalwagen" /></label>
+    <label class="stamp-slot" data-stamp="elektriciteit" data-title="Elektriciteit"><img
+        src="images/stamps/stamp_elektriciteit.png" alt="Elektriciteit" /></label>
+    <label class="stamp-slot" data-stamp="internet" data-title="Internet"><img src="images/stamps/stamp_internet.png"
+        alt="Internet" /></label>
+    <label class="stamp-slot" data-stamp="assembly-point" data-title="Assembly Point"><img
+        src="images/stamps/stamp_assembly.png" alt="Assembly Point" /></label>
+    <label class="stamp-slot" data-stamp="first-aid" data-title="First Aid"><img src="images/stamps/stamp_first_aid.png"
+        alt="First Aid" /></label>
+    <label class="stamp-slot" data-stamp="toilet" data-title="Toilet"><img src="images/stamps/stamp_toilet.png"
+        alt="Toilet" /></label>
+  </div>
+  <!-- 1) DBG utilities MUST come first -->
+  <script src="js/00_utils.js" defer></script>
+
+  <!-- 2) theme toggle (uses dlog) -->
+  <script src="js/theme.js" defer></script>
+
+  <!-- then third‐party JS (also deferred) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/js/all.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+
+  <!-- finally all of your app code, in load order -->
+  <script src="js/10_map.js" defer></script>
+  <script src="js/20_switch-custom-image.js" defer></script>
+  <script src="js/30_custom-image.js" defer></script>
+  <script src="js/40_country.js" defer></script>
+  <script src="js/50_search.js" defer></script>
+  <script src="js/60_calibration.js" defer></script>
+  <script src="js/70_markers.js" defer></script>
+  <script src="js/80_stamps.js" defer></script>
+  <script src="js/90_screenshot.js" defer></script>
+  <script src="js/100_pdf.js" defer></script>
+  <script src="js/ZZ_init.js" defer></script>
+</body>
+
+</html>

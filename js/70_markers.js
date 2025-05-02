@@ -150,34 +150,47 @@ window.placeMarker = placeMarker;
 // ───── 70.60 SAVED LOCATIONS PANEL ─────
 function addToSavedLocations(marker) {
   dlog("📋 [Markers] addToSavedLocations");
+
+  // pull data out of marker
   const { lat, lng } = marker.getLatLng();
   const { label, notes } = marker._customData;
   const coords = `Lat: ${lat.toFixed(6)}, Lon: ${lng.toFixed(6)}`;
   const iconUrl = marker.options.icon.options.iconUrl;
 
+  // create exactly one card per marker
   const card = document.createElement('div');
-  card.className = 'location-card';
+  card.className = 'location-card location-card--saved';
+  // you can set card.dataset.id here if you track it
+  // card.dataset.id = someUniqueId;
+
+  // inject only the card-inner (no <section>, no nested .location-card)
   card.innerHTML = `
+    <!-- HEADER -->
     <div class="location-header">
-      <div class="icon-badge">
-        <img src="${iconUrl}" class="location-icon">
+      <div class="row-left icon-badge">
+        <img src="${iconUrl}" class="location-card-icon" alt="">
         <div class="location-title">${label}</div>
       </div>
-      <div class="actions">
-        <i class="fa fa-pencil edit-button" title="Edit"></i>
-        <i class="fa fa-trash delete-button" title="Delete"></i>
+        <button type="button" class="edit-button"  title="Edit">
+          <i class="fa fa-pencil"></i>
+        </button>
+        <button type="button" class="delete-button" title="Delete">
+          <i class="fa fa-trash"></i>
+        </button>
       </div>
     </div>
+
+    <!-- DETAILS -->
     <div class="location-details">
-      <hr class="divider">
+      <!-- Coordinates -->
       <div class="location-row">
         <div class="row-left">
-          <i class="fa fa-compass location-icon"></i>
+          <i class="fas fa-compass location-icon"></i>
           <div class="row-text">${coords}</div>
         </div>
-        <i class="fa fa-files-o copy-icon" title="Copy Coordinates"
-           onclick='copyToClipboard("${coords}")'></i>
       </div>
+
+      <!-- Notes (optional) -->
       ${notes ? `
       <div class="location-row">
         <div class="row-left">
@@ -185,24 +198,31 @@ function addToSavedLocations(marker) {
           <div class="row-text">${notes}</div>
         </div>
       </div>` : ''}
+
+      <!-- Map Links -->
       <div class="location-row">
-        <div class="app-links">
-          <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank">
-            <img src="images/location_card_icons/google.png">
+        <div class="row-left map-links">
+          <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" title="Google Maps">
+            <img src="images/location_card_icons/icons8-google-maps.svg"
+                 alt="Google Maps" class="app-link-icon">
           </a>
-          <a href="https://maps.apple.com/?ll=${lat},${lng}" target="_blank">
-            <img src="images/location_card_icons/mac-os.png">
+          <a href="https://maps.apple.com/?ll=${lat},${lng}" target="_blank" title="Apple Maps">
+            <img src="images/location_card_icons/icons8-maps.svg"
+                 alt="Apple Maps" class="app-link-icon">
           </a>
-          <a href="https://waze.com/ul?ll=${lat},${lng}" target="_blank">
-            <img src="images/location_card_icons/waze.png">
+          <a href="https://waze.com/ul?ll=${lat},${lng}" target="_blank" title="Waze">
+            <img src="images/location_card_icons/icons8-waze.svg"
+                 alt="Waze" class="app-link-icon">
           </a>
         </div>
       </div>
     </div>
   `;
+
+  // append to the saved-locations container
   document.getElementById('saved-locations').appendChild(card);
 
-  // DELETE
+  // wire up delete
   card.querySelector('.delete-button').onclick = () => {
     if (confirm('Delete this marker?')) {
       map.removeLayer(marker);
@@ -211,10 +231,11 @@ function addToSavedLocations(marker) {
     }
   };
 
-  // EDIT
+  // wire up edit
   card.querySelector('.edit-button').onclick = () => editMarker(marker, card);
 }
 window.addToSavedLocations = addToSavedLocations;
+
 
 // ───── 70.70 MARKER EDITING ─────
 function editMarker(marker, card) {

@@ -6,12 +6,12 @@ function mapInit() {
   dlog("🔧 [Map] mapInit() starting…");
   try {
     // 0) Define our “home” location
-    const initialCoordsArr = [51.143806, 4.387807];
+    const initialCoordsArr = [51.2320986, 5.4231522];
     const initialZoom      = 20;
     const initialAddress   = [
-      'DB Video',
-      'Kontichsesteenweg 39',
-      '2630 Aartselaar',
+      'EMJ SOCIAL MEDIA TEAM',
+      'Toekomstlaan 5',
+      '3910 Neerpelt',
       'BELGIUM'
     ].join('\n');
     const initialCoordsText = `Lat: ${initialCoordsArr[0]}, Lon: ${initialCoordsArr[1]}`;

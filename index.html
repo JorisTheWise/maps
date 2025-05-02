@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="Preproduction Map Creator Tool" />
+  <meta name="description" content="Stamp & Go!" />
   <meta name="color-scheme" content="light dark" />
-  <title>Preproduction Map Creator Tool</title>
+  <title>Stamp & Go!</title>
 
   <!-- 1) theme‐detection MUST run before any CSS is parsed -->
   <script>
@@ -71,7 +71,7 @@
       </div>
     </div>
 
-    <h1 class="header-title">Preproduction Map Creator Tool</h1>
+    <h1 class="header-title">Stamp & Go!</h1>
 
     <div class="header-buttons">
       <button class="btn" id="screenshot-button">
@@ -184,46 +184,55 @@
         </div>
         <div class="url-input-area">
           <div class="url-input-container">
-            <i class="fas fa-globe"></i>
             <input id="customMapUrl" class="url-input" type="url" placeholder="Or enter image URL" />
           </div>
         </div>
+
       </form>
     </main>
 
-    <!-- RIGHT SIDEBAR -->
     <aside class="sidebar right">
       <!-- Selected Location -->
       <section class="location-section">
         <h2>Selected Location</h2>
-        <div class="location-card" data-id="LOC-000">
+        <div class="location-card location-card--selected" data-id="LOC-000">
+          <!-- Address -->
           <div class="location-row">
             <div class="row-left">
               <i class="fas fa-map-marker-alt location-icon"></i>
               <div class="row-text" id="location-address">–</div>
             </div>
           </div>
+          <!-- Coordinates -->
           <div class="location-row">
             <div class="row-left">
               <i class="fas fa-compass location-icon"></i>
               <div class="row-text" id="location-coordinates">–</div>
             </div>
           </div>
+          <!-- Map Links -->
           <div class="location-row">
-            <div class="map-links">
-              <a id="google-map-link" class="brand-link" target="_blank" title="Google Maps">
-                <i class="fab fa-google"></i>
+            <div class="row-left map-links">
+              <a id="google-map-link" class="brand-link"
+                 href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" title="Google Maps">
+                <img src="images/location_card_icons/icons8-google-maps.svg"
+                     alt="Google Maps" class="app-link-icon">
               </a>
-              <a id="apple-map-link" class="brand-link" target="_blank" title="Apple Maps">
-                <i class="fab fa-apple"></i>
+              <a id="apple-map-link" class="brand-link"
+                 href="https://maps.apple.com/?ll=${lat},${lng}" target="_blank" title="Apple Maps">
+                <img src="images/location_card_icons/icons8-maps.svg"
+                     alt="Apple Maps" class="app-link-icon">
               </a>
-              <a id="waze-map-link" class="brand-link" target="_blank" title="Waze">
-                <img src="images/location_card_icons/waze.svg" alt="Waze" class="brand-icon" />
+              <a id="waze-map-link" class="brand-link"
+                 href="https://waze.com/ul?ll=${lat},${lng}" target="_blank" title="Waze">
+                <img src="images/location_card_icons/icons8-waze.svg"
+                     alt="Waze" class="app-link-icon">
               </a>
             </div>
           </div>
         </div>
       </section>
+    
 
       <!-- Saved Locations -->
       <section class="location-section">
@@ -269,19 +278,17 @@
     <label class="stamp-slot" data-stamp="toilet" data-title="Toilet"><img src="images/stamps/stamp_toilet.png"
         alt="Toilet" /></label>
   </div>
-  <!-- 1) DBG utilities MUST come first -->
+  <!-- 1) Your utils and theme toggler -->
   <script src="js/00_utils.js" defer></script>
-
-  <!-- 2) theme toggle (uses dlog) -->
   <script src="js/theme.js" defer></script>
 
-  <!-- then third‐party JS (also deferred) -->
+  <!-- 2) Third-party libs -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/js/all.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 
-  <!-- finally all of your app code, in load order -->
+  <!-- 3) Your app code, in order -->
   <script src="js/10_map.js" defer></script>
   <script src="js/20_switch-custom-image.js" defer></script>
   <script src="js/30_custom-image.js" defer></script>
@@ -293,6 +300,7 @@
   <script src="js/90_screenshot.js" defer></script>
   <script src="js/100_pdf.js" defer></script>
   <script src="js/ZZ_init.js" defer></script>
+
 </body>
 
 </html>

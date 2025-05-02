@@ -1,73 +1,58 @@
 // js/ZZ_init.js
-// 🧠 [Bootstrap] js/ZZ_init.js loaded
+// 🧠 [Bootstrap] Consolidated and testable initialization module
 
-document.addEventListener('DOMContentLoaded', () => {
-  dlog('🟢 DOM ready. Starting initialization...');
+/**
+ * Initializes all application modules in sequence with robust logging and error handling.
+ * @returns {Promise<void>} Resolves when all initialization tasks are complete.
+ */
+async function initAll() {
+  dlog('🟢 initAll invoked. Starting initialization sequence...');
 
-  // ── 1) MAP SETUP ──
-  try {
-    dlog('📍 [Map] Initializing Leaflet map...');
-    mapInit(); // from js/10_map.js
-  } catch (err) {
-    derr('❌ [Map] mapInit failed:', err);
+  // 1️⃣ Core initialization tasks
+  const initTasks = [
+    { name: '🗺️ [Map]',        fn: mapInit },
+    { name: '🖼️ [Image]',      fn: () => { initSwitchCustomImage(); initCustomImageControls(); } },
+    { name: '🔍/🌐 [Search/Country]', fn: () => { initSearch(); initCountryDropdown(); } },
+    { name: '📐 [Calibration]', fn: initCalibration },
+    { name: '📌 [Markers]',    fn: initMarkers },
+    { name: '🎯 [Stamps]',     fn: initStamps }
+  ];
+
+  for (const { name, fn } of initTasks) {
+    try {
+      dlog(`🔧 ${name} Initializing...`);
+      await Promise.resolve(fn());
+      dlog(`✅ ${name} init complete`);
+    } catch (err) {
+      derr(`❌ ${name} Initialization failed:`, err);
+    }
   }
 
-  // ── 2) IMAGE VIEW & UPLOAD SWITCH ──
+  // 2️⃣ Export tools setup
   try {
-    dlog('🖼️ [Image] Initializing image toggle and upload controls...');
-    initSwitchCustomImage();   // js/20_switch-custom-image.js
-    initCustomImageControls(); // js/30_custom-image.js
-    dlog('✅ [Switch] initSwitch & ImageLoader complete');
-  } catch (err) {
-    derr('❌ [Switch/ImageLoader] Initialization failed:', err);
-  }
-
-  // ── 3) SEARCH & COUNTRY ──
-  try {
-    dlog('🔍 [Search] Initializing address search and country selector...');
-    initSearch();          
-    initCountryDropdown(); 
-    dlog('✅ [Search/Country] init complete');
-  } catch (err) {
-    derr('❌ [Search/Country] Initialization failed:', err);
-  }
-
-  // ── 4) CALIBRATION ──
-  try {
-    dlog('📐 [Calibration] Initializing pin calibration system...');
-    initCalibration(); 
-    dlog('✅ [Calibration] init complete');
-  } catch (err) {
-    derr('❌ [Calibration] Initialization failed:', err);
-  }
-
-  // ── 5) MARKERS ──
-  try {
-    dlog('📌 [Markers] Initializing map markers...');
-    initMarkers(); 
-    dlog('✅ [Markers] init complete');
-  } catch (err) {
-    derr('❌ [Markers] Initialization failed:', err);
-  }
-
-  // ── 6) STAMPS ──
-  try {
-    dlog('🎯 [Stamps] Initializing stamp placement system...');
-    initStamps();
-    dlog('✅ [Stamps] init complete');
-  } catch (err) {
-    derr('❌ [Stamps] Initialization failed:', err);
-  }
-
-  // ── 7) EXPORTS ──
-  try {
-    dlog('📸 [Export] Initializing screenshot and PDF tools...');
+    dlog('📸 [Screenshot] Initializing screenshot tool...');
     initScreenshot();
-    initPDF();
-    dlog('✅ [Export] init complete');
+
+    // Guard against missing PDF library or function
+    if (typeof initPDF === 'function') {
+      dlog('📄 [PDF] initPDF detected, initializing...');
+      await Promise.resolve(initPDF());
+      dlog('✅ [PDF] init complete');
+    } else {
+      dlog('⚠️ [PDF] initPDF not found, skipping PDF setup');
+    }
+
+    dlog('✅ [Export] All export init complete');
   } catch (err) {
     derr('❌ [Export] Initialization failed:', err);
   }
 
-  dlog('✅ Initialization complete (all modules attempted).');
-});
+  dlog('✅ initAll sequence complete.');
+}
+
+// Automatically bootstrap on DOMContentLoaded
+if (typeof window !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', initAll);
+}
+
+/* The End */

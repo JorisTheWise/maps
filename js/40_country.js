@@ -60,3 +60,4 @@ function initCountryDropdown() {
 // expose for global use
 window.updateCountryDropdown = updateCountryDropdown;
 window.initCountryDropdown   = initCountryDropdown;
+

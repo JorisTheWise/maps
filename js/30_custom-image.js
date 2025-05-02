@@ -90,12 +90,12 @@
     dlog("⏳ [ImageLoader] reading file", file.name);
     const reader = new FileReader();
     reader.onload = () => loadImage(reader.result);
-    reader.onerror = () => showError('Failed to read file.');
+    reader.onerror = () => showError('❌ Failed to read file.');
     reader.readAsDataURL(file);
   }
 
   function applyCustomMapUrl(raw) {
-    if (!raw) return showError('Please enter a URL.');
+    if (!raw) return showError('🌐 Please enter a URL.');
     displayStatus('Loading image…');
     dlog("🔗 [ImageLoader] loading URL", raw);
     loadImage(raw);
@@ -111,7 +111,7 @@
       imgCt().style.display  = 'block';
       imgCt().style.backgroundImage = `url("${src}")`;
     };
-    img.onerror = () => showError('Image failed to load.');
+    img.onerror = () => showError('❌ Image failed to load.');
     img.src = src;
   }
 
